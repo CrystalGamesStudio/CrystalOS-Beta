@@ -1,0 +1,54 @@
+name: Build CrystalOS Kernel
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'tools/crystalos.config'
+      - '.github/workflows/build-kernel.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential flex bison bc libssl-dev libelf-dev
+
+      - name: Configure kernel
+        run: |
+          make allnoconfig
+          scripts/kconfig/merge_config.sh .config tools/crystalos.config
+          make olddefconfig
+
+      - name: Build kernel
+        run: make -j$(nproc)
+
+      - name: Verify bzImage
+        run: |
+          ls -lh arch/x86/boot/bzImage
+          SIZE=$(stat -c%s arch/x86/boot/bzImage)
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          echo "bzImage size: ${SIZE_MB}MB"
+          if [ $SIZE -gt 20971520 ]; then
+            echo "ERROR: bzImage too large (${SIZE_MB}MB > 20MB)"
+            exit 1
+          fi
+
+      - name: Upload bzImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: bzImage
+          path: arch/x86/boot/bzImage
+
+      - name: Upload .config
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-config
+          path: .config
