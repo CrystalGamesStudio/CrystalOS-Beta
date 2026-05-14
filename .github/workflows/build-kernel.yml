@@ -23,8 +23,8 @@ jobs:
 
       - name: Configure kernel
         run: |
+          export KCONFIG_ALLCONFIG=tools/crystalos.config
           make allnoconfig
-          scripts/kconfig/merge_config.sh .config tools/crystalos.config
           make olddefconfig
 
       - name: Build kernel
