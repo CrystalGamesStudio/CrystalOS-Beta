@@ -49,7 +49,7 @@ fi
 # --- Test 2: Wymagane opcje - podstawowe (64-bit, SMP, PCI) ---
 echo ""
 echo "Test 2: Podstawowe opcje (64BIT, SMP, PCI)"
-BASIC_OPTS="64BIT SMP PCI PCI_GOANY"
+BASIC_OPTS="64BIT SMP PCI"
 ALL_BASIC=true
 for OPT in $BASIC_OPTS; do
     if config_enabled "$OPT"; then
@@ -63,7 +63,7 @@ done
 # --- Test 3: Virtio (dysk, siec, grafika) ---
 echo ""
 echo "Test 3: Sterowniki Virtio (dysk, siec, grafika)"
-VIRTIO_OPTS="VIRTIO VIRTIO_MENU VIRTIO_PCI VIRTIO_BLK VIRTIO_NET VIRTIO_GPU"
+VIRTIO_OPTS="VIRTIO VIRTIO_MENU VIRTIO_PCI VIRTIO_BLK VIRTIO_NET DRM_VIRTIO_GPU"
 ALL_VIRTIO=true
 for OPT in $VIRTIO_OPTS; do
     if config_enabled "$OPT"; then
