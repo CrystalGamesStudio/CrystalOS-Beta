@@ -47,8 +47,16 @@ jobs:
           name: bzImage
           path: arch/x86/boot/bzImage
 
+      - name: Verify kernel config
+        run: |
+          grep -E 'CONFIG_(VIRTIO_BLK|VIRTIO_NET|HID_SUPPORT|BLK_DEV)=y' .config
+          echo "---"
+          grep -c '=y' .config
+        if: always()
+
       - name: Upload .config
         uses: actions/upload-artifact@v4
         with:
           name: kernel-config
           path: .config
+        if: always()
