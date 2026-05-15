@@ -178,12 +178,12 @@ XORG_PACKAGES="xorg-server xinit xrandr xterm \
     xf86-video-modesetting"
 
 if command -v apk &>/dev/null; then
-    apk add --root "$ROOTFS" --allow-untrusted --no-cache \
-        --repository "$ALPINE_REPO_MAIN" $XORG_PACKAGES
+    apk --root "$ROOTFS" --allow-untrusted --no-cache \
+        --repository "$ALPINE_REPO_MAIN" add $XORG_PACKAGES
 elif [[ -n "$APK_STATIC" ]]; then
     $APK_STATIC --root "$ROOTFS" --allow-untrusted --no-cache \
         --repository "$ALPINE_REPO_MAIN" \
-        --repository "$ALPINE_REPO_COMMUNITY" $XORG_PACKAGES
+        --repository "$ALPINE_REPO_COMMUNITY" add $XORG_PACKAGES
 elif [[ -x "$ROOTFS/sbin/apk" ]]; then
     mount -t proc proc "$ROOTFS/proc" 2>/dev/null || true
     mount -t sysfs sysfs "$ROOTFS/sys" 2>/dev/null || true
