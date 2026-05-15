@@ -1,0 +1,120 @@
+name: Build CrystalOS ISO
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'tools/build-rootfs.sh'
+      - 'tools/build-iso.sh'
+      - 'tools/crystalos.config'
+      - '.github/workflows/build-iso.yml'
+  workflow_dispatch:
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      kernel-config-hash: ${{ steps.kernel-hash.outputs.hash }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential flex bison bc libssl-dev libelf-dev
+
+      - name: Configure kernel
+        run: |
+          export KCONFIG_ALLCONFIG=tools/crystalos.config
+          make allnoconfig
+          scripts/config --enable NETDEVICES
+          scripts/config --enable NET_CORE
+          scripts/config --enable BLK_DEV
+          scripts/config --enable HID_SUPPORT
+          scripts/config --enable VIRTIO_BLK
+          scripts/config --enable VIRTIO_NET
+          scripts/config --enable HID
+          scripts/config --enable HID_GENERIC
+          scripts/config --enable USB_HID
+          make olddefconfig
+
+      - name: Build kernel
+        run: make -j$(nproc)
+
+      - name: Verify bzImage
+        run: |
+          ls -lh arch/x86/boot/bzImage
+          SIZE=$(stat -c%s arch/x86/boot/bzImage)
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          echo "bzImage size: ${SIZE_MB}MB"
+          if [ $SIZE -gt 20971520 ]; then
+            echo "ERROR: bzImage too large (${SIZE_MB}MB > 20MB)"
+            exit 1
+          fi
+
+      - name: Cache kernel hash
+        id: kernel-hash
+        run: echo "hash=${{ hashFiles('tools/crystalos.config') }}" >> $GITHUB_OUTPUT
+
+      - name: Upload bzImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: bzImage
+          path: arch/x86/boot/bzImage
+
+  build-iso:
+    needs: build-kernel
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ISO dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y grub-pc-bin xorriso squashfs-tools cpio gzip qemu-system-x86
+
+      - name: Download bzImage
+        uses: actions/download-artifact@v4
+        with:
+          name: bzImage
+          path: arch/x86/boot/
+
+      - name: Build rootfs
+        run: bash tools/build-rootfs.sh
+
+      - name: Build ISO
+        run: bash tools/build-iso.sh
+
+      - name: Run ISO tests
+        run: bash tests/test-iso.sh
+
+      - name: Boot test in QEMU
+        run: |
+          echo "Test bootowania w QEMU (serial console)..."
+          timeout 60 qemu-system-x86_64 \
+            -cdrom build/crystalos-beta.iso \
+            -m 512 \
+            -nographic \
+            -no-reboot \
+            -serial mon:stdio \
+            | grep -m1 -E "login:|crystalos" && echo "BOOT TEST: PASSED" || echo "BOOT TEST: TIMEOUT/FAILED"
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: crystalos-beta-iso
+          path: build/crystalos-beta.iso
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build/rootfs/etc/hostname
+            build/rootfs/etc/issue
+            build/iso/boot/grub/grub.cfg
+          if: always()
