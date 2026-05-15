@@ -174,7 +174,7 @@ chmod +x "$ROOTFS/init"
 # Instaluje Xorg i sterowniki graficzne
 echo "Instalacja Xorg..."
 XORG_PACKAGES="xorg-server xinit xrandr xterm \
-    xf86-input-keyboard xf86-input-mouse xf86-input-libinput \
+    xf86-input-libinput \
     xf86-video-modesetting"
 
 if command -v apk &>/dev/null; then

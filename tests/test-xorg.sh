@@ -54,17 +54,14 @@ else
     fail "xterm brak"
 fi
 
-# --- Test 4: Sterowniki input ---
+# --- Test 4: Sterownik input (libinput) ---
 echo ""
-echo "Test 4: Sterowniki input"
-INPUT_MODULES="kbd_drv.so mouse_drv.so"
-for MOD in $INPUT_MODULES; do
-    if find "$ROOTFS/usr/lib/xorg" -name "$MOD" 2>/dev/null | grep -q .; then
-        pass "$MOD znaleziony"
-    else
-        fail "$MOD brak"
-    fi
-done
+echo "Test 4: Sterownik input"
+if find "$ROOTFS/usr/lib/xorg" -name "libinput_drv.so" 2>/dev/null | grep -q .; then
+    pass "libinput_drv.so znaleziony"
+else
+    fail "libinput_drv.so brak"
+fi
 
 # --- Test 5: Sterownik graficzny (vesa lub modesetting) ---
 echo ""
