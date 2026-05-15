@@ -102,7 +102,7 @@ jobs:
           LOG=/tmp/qemu-boot.log
           timeout 90 qemu-system-x86_64 \
             -cdrom build/crystalos-beta.iso \
-            -m 512 \
+            -m 2048 \
             -nographic \
             -no-reboot \
             2>&1 | tee "$LOG" || true
