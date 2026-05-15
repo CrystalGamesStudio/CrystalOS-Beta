@@ -27,6 +27,7 @@ jobs:
           make allnoconfig
           # Force-enable options that KCONFIG_ALLCONFIG may miss for menuconfig items
           scripts/config --enable NETDEVICES
+          scripts/config --enable NET_CORE
           scripts/config --enable BLK_DEV
           scripts/config --enable HID_SUPPORT
           scripts/config --enable VIRTIO_BLK
