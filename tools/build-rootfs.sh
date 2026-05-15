@@ -128,4 +128,26 @@ https://dl-cdn.alpinelinux.org/alpine/v3.21/main
 https://dl-cdn.alpinelinux.org/alpine/v3.21/community
 REPOS
 
+# Tworzy /init - punkt wejscia dla initramfs boot
+cat > "$ROOTFS/init" << 'INITSCRIPT'
+#!/bin/sh
+# CrystalOS init - uruchamiany przez kernel z initramfs
+
+# Montuj wirtualne filesystems
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+mount -t tmpfs tmpfs /run
+mount -t tmpfs tmpfs /tmp
+
+# Ustaw hostname
+hostname crystalos
+
+# Uruchom init
+exec /sbin/init
+INITSCRIPT
+chmod +x "$ROOTFS/init"
+
 echo "=== Rootfs gotowy: $ROOTFS ==="

@@ -95,13 +95,24 @@ jobs:
       - name: Boot test in QEMU
         run: |
           echo "Test bootowania w QEMU (serial console)..."
-          timeout 60 qemu-system-x86_64 \
+          LOG=/tmp/qemu-boot.log
+          timeout 90 qemu-system-x86_64 \
             -cdrom build/crystalos-beta.iso \
             -m 512 \
             -nographic \
             -no-reboot \
-            -serial mon:stdio \
-            | grep -m1 -E "login:|crystalos" && echo "BOOT TEST: PASSED" || echo "BOOT TEST: TIMEOUT/FAILED"
+            2>&1 | tee "$LOG" || true
+          echo "--- Ostatnie 50 linii boot logu ---"
+          tail -50 "$LOG"
+          echo "--- Szukanie login: ---"
+          if grep -q "login:" "$LOG"; then
+            echo "BOOT TEST: PASSED - znaleziono login:"
+          else
+            echo "BOOT TEST: FAILED - brak login: w logu"
+            echo "--- Szukanie kernel panic / error ---"
+            grep -i -E "panic|error|fail|cannot" "$LOG" || echo "Brak oczywistych bledow"
+            exit 1
+          fi
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4

@@ -55,12 +55,12 @@ set timeout=3
 set default=0
 
 menuentry "CrystalOS Beta" {
-    linux /boot/vmlinuz root=/dev/ram0 init=/sbin/init console=ttyS0,115200 console=tty0
+    linux /boot/vmlinuz console=ttyS0,115200 console=tty0
     initrd /boot/initramfs
 }
 
 menuentry "CrystalOS Beta (debug)" {
-    linux /boot/vmlinuz root=/dev/ram0 init=/sbin/init console=ttyS0,115200 console=tty0 debug loglevel=7
+    linux /boot/vmlinuz console=ttyS0,115200 console=tty0 debug loglevel=7
     initrd /boot/initramfs
 }
 GRUBCFG
