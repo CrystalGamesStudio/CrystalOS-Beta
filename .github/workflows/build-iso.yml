@@ -75,7 +75,7 @@ jobs:
       - name: Install ISO dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y grub-pc-bin xorriso squashfs-tools cpio gzip qemu-system-x86
+          sudo apt-get install -y grub-pc-bin xorriso squashfs-tools cpio gzip qemu-system-x86 mtools
 
       - name: Download bzImage
         uses: actions/download-artifact@v4
