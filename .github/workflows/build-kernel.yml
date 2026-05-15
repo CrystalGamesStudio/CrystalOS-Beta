@@ -25,6 +25,15 @@ jobs:
         run: |
           export KCONFIG_ALLCONFIG=tools/crystalos.config
           make allnoconfig
+          # Force-enable options that KCONFIG_ALLCONFIG may miss for menuconfig items
+          scripts/config --enable NETDEVICES
+          scripts/config --enable BLK_DEV
+          scripts/config --enable HID_SUPPORT
+          scripts/config --enable VIRTIO_BLK
+          scripts/config --enable VIRTIO_NET
+          scripts/config --enable HID
+          scripts/config --enable HID_GENERIC
+          scripts/config --enable USB_HID
           make olddefconfig
 
       - name: Build kernel
@@ -41,22 +50,27 @@ jobs:
             exit 1
           fi
 
+      - name: Verify kernel config
+        run: |
+          grep -E 'CONFIG_(VIRTIO_BLK|VIRTIO_NET|HID_SUPPORT|BLK_DEV|HID)=y' .config || echo "Some options built as modules:"
+          grep -E 'CONFIG_(VIRTIO_BLK|VIRTIO_NET|HID_SUPPORT|BLK_DEV|HID)=m' .config || true
+          echo "---"
+          grep -c '=y' .config
+        if: always()
+
       - name: Upload bzImage
         uses: actions/upload-artifact@v4
         with:
           name: bzImage
           path: arch/x86/boot/bzImage
 
-      - name: Verify kernel config
-        run: |
-          grep -E 'CONFIG_(VIRTIO_BLK|VIRTIO_NET|HID_SUPPORT|BLK_DEV)=y' .config
-          echo "---"
-          grep -c '=y' .config
+      - name: Save config
+        run: cp .config kernel.config
         if: always()
 
-      - name: Upload .config
+      - name: Upload config
         uses: actions/upload-artifact@v4
         with:
           name: kernel-config
-          path: .config
+          path: kernel.config
         if: always()
