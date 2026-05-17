@@ -87,6 +87,9 @@ jobs:
       - name: Build rootfs (with Xorg + LightDM)
         run: sudo bash tools/build-rootfs.sh
 
+      - name: Fix rootfs permissions
+        run: sudo chmod -R a+rX build/rootfs/
+
       - name: Run Xorg tests
         run: bash tests/test-xorg.sh
 
