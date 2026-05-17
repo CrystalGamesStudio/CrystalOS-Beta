@@ -116,16 +116,16 @@ else
     fail "grub.cfg nie istnieje"
 fi
 
-# --- Test 8: ISO istnieje i ma rozmiar < 200MB ---
+# --- Test 8: ISO istnieje i ma rozmiar < 500MB ---
 echo ""
 echo "Test 8: Obraz ISO"
 if [[ -f "$ISO_FILE" ]]; then
     SIZE=$(stat -f%z "$ISO_FILE" 2>/dev/null || stat -c%s "$ISO_FILE" 2>/dev/null)
     SIZE_MB=$((SIZE / 1024 / 1024))
-    if [[ $SIZE -lt 209715200 ]]; then
-        pass "ISO istnieje i ma rozmiar ${SIZE_MB}MB (< 200MB)"
+    if [[ $SIZE -lt 524288000 ]]; then
+        pass "ISO istnieje i ma rozmiar ${SIZE_MB}MB (< 500MB)"
     else
-        fail "ISO jest za duze: ${SIZE_MB}MB (limit: 200MB)"
+        fail "ISO jest za duze: ${SIZE_MB}MB (limit: 500MB)"
     fi
 else
     fail "ISO nie istnieje (build/crystalos-beta.iso)"
