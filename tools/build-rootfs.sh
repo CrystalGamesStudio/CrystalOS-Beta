@@ -177,23 +177,29 @@ XORG_PACKAGES="xorg-server xinit xrandr xterm \
     xf86-input-libinput \
     xf86-video-modesetting"
 
+XFCE_PACKAGES="xfce4 xfwm4 xfce4-panel xfdesktop \
+    xfce4-session xfce4-settings xfce4-appfinder"
+
+ALL_PACKAGES="$XORG_PACKAGES $XFCE_PACKAGES"
+
 if command -v apk &>/dev/null; then
     apk --root "$ROOTFS" --allow-untrusted --no-cache \
-        --repository "$ALPINE_REPO_MAIN" add $XORG_PACKAGES
+        --repository "$ALPINE_REPO_MAIN" \
+        --repository "$ALPINE_REPO_COMMUNITY" add $ALL_PACKAGES
 elif [[ -n "$APK_STATIC" ]]; then
     $APK_STATIC --root "$ROOTFS" --allow-untrusted --no-cache \
         --repository "$ALPINE_REPO_MAIN" \
-        --repository "$ALPINE_REPO_COMMUNITY" add $XORG_PACKAGES
+        --repository "$ALPINE_REPO_COMMUNITY" add $ALL_PACKAGES
 elif [[ -x "$ROOTFS/sbin/apk" ]]; then
     mount -t proc proc "$ROOTFS/proc" 2>/dev/null || true
     mount -t sysfs sysfs "$ROOTFS/sys" 2>/dev/null || true
     mount -o bind /dev "$ROOTFS/dev" 2>/dev/null || true
-    chroot "$ROOTFS" apk add --no-cache $XORG_PACKAGES
+    chroot "$ROOTFS" apk add --no-cache $ALL_PACKAGES
     umount "$ROOTFS/dev" 2>/dev/null || true
     umount "$ROOTFS/sys" 2>/dev/null || true
     umount "$ROOTFS/proc" 2>/dev/null || true
 else
-    echo "UWAGA: Nie mozna zainstalowac Xorg - brak apk."
+    echo "UWAGA: Nie mozna zainstalowac pakietow - brak apk."
     echo "Na Linuxie: skrypt automatycznie pobierze apk.static"
     echo "Na macOS: buduj przez CI lub na Linuxie"
 fi
@@ -231,13 +237,77 @@ Section "InputClass"
 EndSection
 XORGCONF
 
-# Tworzy .xinitrc - uruchamia xterm po starcie X
+# Tworzy .xinitrc - uruchamia XFCE po starcie X
 echo "Konfiguracja .xinitrc..."
 cat > "$ROOTFS/root/.xinitrc" << 'XINITRC'
 #!/bin/sh
-xterm -geometry 80x24+0+0 &
-exec xterm -geometry 80x24+0+400
+exec startxfce4
 XINITRC
 chmod +x "$ROOTFS/root/.xinitrc"
+
+# Konfiguracja XFCE - panel na dole, 2 obszary robocze, domyslne tlo
+echo "Konfiguracja XFCE..."
+
+XFCE_CONFIG_DIR="$ROOTFS/etc/xdg/xfce4/xfconf/xfce-perchannel-xml"
+mkdir -p "$XFCE_CONFIG_DIR"
+
+# Panel na dole ekranu
+cat > "$XFCE_CONFIG_DIR/xfce4-panel.xml" << 'PANEL'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-panel" version="1.0">
+  <property name="panels" type="uint" value="1">
+    <property name="panel-0" type="empty">
+      <!-- Panel position: bottom edge -->
+      <property name="position" type="string" value="p=6;x=0;y=0"/>
+      <property name="position-locked" type="bool" value="true"/>
+      <property name="size" type="uint" value="32"/>
+      <property name="length" type="uint" value="100"/>
+      <property name="length-adjust" type="bool" value="true"/>
+      <property name="plugins" type="uint" value="5">
+        <property name="plugin-1" type="string" value="whiskermenu"/>
+        <property name="plugin-2" type="string" value="tasklist"/>
+        <property name="plugin-3" type="string" value="separator"/>
+        <property name="plugin-4" type="string" value="pager"/>
+        <property name="plugin-5" type="string" value="clock"/>
+      </property>
+    </property>
+  </property>
+</channel>
+PANEL
+
+# Pulpit - domyslne tlo
+cat > "$XFCE_CONFIG_DIR/xfdesktop.xml" << 'DESKTOP'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfdesktop" version="1.0">
+  <property name="backdrop" type="empty">
+    <property name="screen0" type="empty">
+      <property name="monitor0" type="empty">
+        <property name="image-style" type="int" value="5"/>
+        <property name="color-style" type="int" value="1"/>
+        <property name="color1" type="array">
+          <value type="uint" value="1024"/>
+          <value type="uint" value="1792"/>
+          <value type="uint" value="5120"/>
+          <value type="uint" value="65535"/>
+        </property>
+      </property>
+    </property>
+  </property>
+</channel>
+DESKTOP
+
+# Menedzer okien - 2 obszary robocze
+cat > "$XFCE_CONFIG_DIR/xfwm4.xml" << 'WM'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfwm4" version="1.0">
+  <property name="general" type="empty">
+    <property name="workspace_count" type="int" value="2"/>
+    <property name="use_compositing" type="bool" value="true"/>
+    <property name="shadow_delta_x" type="int" value="0"/>
+    <property name="shadow_delta_y" type="int" value="0"/>
+    <property name="shadow_opacity" type="int" value="50"/>
+  </property>
+</channel>
+WM
 
 echo "=== Rootfs gotowy: $ROOTFS ==="

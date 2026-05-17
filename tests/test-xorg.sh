@@ -99,16 +99,16 @@ for OPT in CONFIG_DRM CONFIG_DRM_VIRTIO_GPU; do
     fi
 done
 
-# --- Test 8: .xinitrc uruchamia xterm ---
+# --- Test 8: .xinitrc uruchamia xterm lub startxfce4 ---
 echo ""
 echo "Test 8: .xinitrc"
 XINITRC="$ROOTFS/root/.xinitrc"
 if [[ -f "$XINITRC" ]]; then
     pass ".xinitrc istnieje"
-    if grep -q "xterm" "$XINITRC"; then
-        pass ".xinitrc uruchamia xterm"
+    if grep -q "xterm" "$XINITRC" || grep -q "startxfce4" "$XINITRC"; then
+        pass ".xinitrc uruchamia xterm lub startxfce4"
     else
-        fail ".xinitrc nie uruchamia xterm"
+        fail ".xinitrc nie uruchamia xterm ani startxfce4"
     fi
 else
     fail ".xinitrc brak"
