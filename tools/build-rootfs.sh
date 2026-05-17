@@ -103,8 +103,15 @@ EOF
 cat > "$ROOTFS/etc/profile.d/crystalos-welcome.sh" << 'WELCOME'
 echo ""
 echo "Witaj w CrystalOS Beta!"
-echo "Dostepne komendy: ls, cat, pwd, dmesg, mount, df"
 echo ""
+
+# Auto-start XFCE na tty1 (backup - .profile tez to robi)
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    mkdir -p /run/dbus
+    dbus-daemon --system 2>/dev/null &
+    sleep 1
+    exec startx
+fi
 WELCOME
 chmod +x "$ROOTFS/etc/profile.d/crystalos-welcome.sh"
 
@@ -173,7 +180,7 @@ chmod +x "$ROOTFS/init"
 
 # Instaluje Xorg i sterowniki graficzne
 echo "Instalacja Xorg..."
-XORG_PACKAGES="xorg-server xinit xrandr xterm \
+XORG_PACKAGES="xorg-server xinit xrandr xterm xauth \
     xf86-input-libinput \
     xf86-video-modesetting"
 
@@ -262,8 +269,12 @@ chmod +x "$ROOTFS/root/.xinitrc"
 cat > "$ROOTFS/root/.profile" << 'PROFILE'
 # Auto-start XFCE desktop na tty1
 if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    startx
-    logout
+    # Start dbus (wymagany przez XFCE)
+    mkdir -p /run/dbus
+    dbus-daemon --system 2>/dev/null &
+    sleep 1
+    # Start XFCE
+    exec startx
 fi
 PROFILE
 
