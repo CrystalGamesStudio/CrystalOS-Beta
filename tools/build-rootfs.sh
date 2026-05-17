@@ -180,7 +180,9 @@ XORG_PACKAGES="xorg-server xinit xrandr xterm \
 XFCE_PACKAGES="xfce4 xfwm4 xfce4-panel xfdesktop \
     xfce4-session xfce4-settings xfce4-appfinder"
 
-ALL_PACKAGES="$XORG_PACKAGES $XFCE_PACKAGES"
+LIGHTDM_PACKAGES="lightdm lightdm-gtk-greeter"
+
+ALL_PACKAGES="$XORG_PACKAGES $XFCE_PACKAGES $LIGHTDM_PACKAGES"
 
 if command -v apk &>/dev/null; then
     apk --root "$ROOTFS" --allow-untrusted --no-cache \
@@ -309,5 +311,67 @@ cat > "$XFCE_CONFIG_DIR/xfwm4.xml" << 'WM'
   </property>
 </channel>
 WM
+
+# --- Konfiguracja LightDM (ekran logowania) ---
+echo "Konfiguracja LightDM..."
+
+mkdir -p "$ROOTFS/etc/lightdm"
+
+cat > "$ROOTFS/etc/lightdm/lightdm.conf" << 'LIGHTDMCONF'
+[SeatDefaults]
+greeter-session=lightdm-gtk-greeter
+user-session=xfce
+session-wrapper=/etc/lightdm/Xsession
+
+# Branding CrystalOS
+greeter-show-manual-login=true
+allow-guest=false
+
+# Logowanie bez hasla (jesli konto nie ma hasla)
+autologin-user=root
+autologin-user-timeout=0
+LIGHTDMCONF
+
+# Greeter branding - CrystalOS w naglowku
+mkdir -p "$ROOTFS/etc/lightdm/lightdm-gtk-greeter.conf.d"
+cat > "$ROOTFS/etc/lightdm/lightdm-gtk-greeter.conf.d/01-crystalos.conf" << 'GREETERCONF'
+[greeter]
+theme-name=Adwaita
+icon-theme-name=Adwaita
+font-name=Sans 11
+background=
+screen-name=CrystalOS
+GREETERCONF
+
+# OpenRC serwis lightdm w default runlevel
+mkdir -p "$ROOTFS/etc/runlevels/default"
+if [[ -f "$ROOTFS/etc/init.d/lightdm" ]]; then
+    ln -sf /etc/init.d/lightdm "$ROOTFS/etc/runlevels/default/lightdm"
+else
+    # Tworzy prosty OpenRC service script dla lightdm
+    cat > "$ROOTFS/etc/init.d/lightdm" << 'RCSCRIPT'
+#!/sbin/openrc-run
+
+name="lightdm"
+description="Light Display Manager"
+command="/usr/sbin/lightdm"
+command_background=yes
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need dbus
+    after bootmisc consolefont net
+    after xdm
+    use logger
+}
+RCSCRIPT
+    chmod +x "$ROOTFS/etc/init.d/lightdm"
+    ln -sf /etc/init.d/lightdm "$ROOTFS/etc/runlevels/default/lightdm"
+fi
+
+# dbus tez potrzebny dla LightDM
+if [[ -f "$ROOTFS/etc/init.d/dbus" ]] && [[ ! -L "$ROOTFS/etc/runlevels/default/dbus" ]]; then
+    ln -sf /etc/init.d/dbus "$ROOTFS/etc/runlevels/default/dbus"
+fi
 
 echo "=== Rootfs gotowy: $ROOTFS ==="

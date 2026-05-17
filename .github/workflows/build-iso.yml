@@ -84,11 +84,17 @@ jobs:
           name: bzImage
           path: arch/x86/boot/
 
-      - name: Build rootfs (with Xorg)
+      - name: Build rootfs (with Xorg + LightDM)
         run: bash tools/build-rootfs.sh
 
       - name: Run Xorg tests
         run: bash tests/test-xorg.sh
+
+      - name: Run XFCE tests
+        run: bash tests/test-xfce.sh
+
+      - name: Run LightDM tests
+        run: bash tests/test-lightdm.sh
 
       - name: Build ISO
         run: bash tools/build-iso.sh
