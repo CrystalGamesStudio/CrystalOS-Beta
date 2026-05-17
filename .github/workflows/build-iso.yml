@@ -100,7 +100,10 @@ jobs:
         run: bash tests/test-lightdm.sh
 
       - name: Build ISO
-        run: bash tools/build-iso.sh
+        run: sudo bash tools/build-iso.sh
+
+      - name: Fix ISO permissions
+        run: sudo chmod -R a+rX build/
 
       - name: Run ISO tests
         run: bash tests/test-iso.sh
