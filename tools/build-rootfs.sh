@@ -180,7 +180,7 @@ XORG_PACKAGES="xorg-server xinit xrandr xterm \
 XFCE_PACKAGES="xfce4 xfwm4 xfce4-panel xfdesktop \
     xfce4-session xfce4-settings xfce4-appfinder"
 
-LIGHTDM_PACKAGES="lightdm lightdm-gtk-greeter"
+LIGHTDM_PACKAGES="lightdm lightdm-gtk-greeter dbus elogind polkit-elogind"
 
 ALL_PACKAGES="$XORG_PACKAGES $XFCE_PACKAGES $LIGHTDM_PACKAGES"
 
@@ -205,6 +205,17 @@ else
     echo "Na Linuxie: skrypt automatycznie pobierze apk.static"
     echo "Na macOS: buduj przez CI lub na Linuxie"
 fi
+
+# Inicjalizacja dbus (wymagany przez LightDM)
+echo "Inicjalizacja dbus..."
+mkdir -p "$ROOTFS/var/lib/dbus" "$ROOTFS/run/dbus"
+if [[ -f /proc/sys/kernel/random/uuid ]]; then
+    cat /proc/sys/kernel/random/uuid | tr -d '\n' > "$ROOTFS/etc/machine-id"
+else
+    uuidgen 2>/dev/null | tr -d '\n' | tr '[:upper:]' '[:lower:]' | tr -d '-' > "$ROOTFS/etc/machine-id" 2>/dev/null || \
+        echo "00000000000000000000000000000000" > "$ROOTFS/etc/machine-id"
+fi
+cp "$ROOTFS/etc/machine-id" "$ROOTFS/var/lib/dbus/machine-id" 2>/dev/null || true
 
 # Tworzy xorg.conf dla virtio-gpu + modesetting
 echo "Konfiguracja xorg.conf..."
@@ -370,8 +381,14 @@ RCSCRIPT
 fi
 
 # dbus tez potrzebny dla LightDM
+mkdir -p "$ROOTFS/etc/runlevels/boot" "$ROOTFS/etc/runlevels/default"
 if [[ -f "$ROOTFS/etc/init.d/dbus" ]] && [[ ! -L "$ROOTFS/etc/runlevels/default/dbus" ]]; then
     ln -sf /etc/init.d/dbus "$ROOTFS/etc/runlevels/default/dbus"
+fi
+
+# elogind potrzebny dla LightDM (session tracking)
+if [[ -f "$ROOTFS/etc/init.d/elogind" ]] && [[ ! -L "$ROOTFS/etc/runlevels/default/elogind" ]]; then
+    ln -sf /etc/init.d/elogind "$ROOTFS/etc/runlevels/default/elogind"
 fi
 
 echo "=== Rootfs gotowy: $ROOTFS ==="

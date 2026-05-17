@@ -109,6 +109,34 @@ else
     fail "brak xfce.desktop w /usr/share/xsessions/"
 fi
 
+# --- Test 9: dbus zainstalowany i w runlevel ---
+echo ""
+echo "Test 9: dbus (wymagany przez LightDM)"
+if [[ -f "$ROOTFS/usr/bin/dbus-daemon" ]] || [[ -f "$ROOTFS/usr/sbin/dbus-daemon" ]]; then
+    pass "dbus-daemon istnieje"
+else
+    fail "dbus-daemon brak"
+fi
+if [[ -f "$ROOTFS/etc/machine-id" ]]; then
+    pass "/etc/machine-id istnieje"
+else
+    fail "/etc/machine-id brak (dbus niezainicjalizowany)"
+fi
+if [[ -L "$ROOTFS/etc/runlevels/default/dbus" ]]; then
+    pass "dbus jest w default runlevel"
+else
+    fail "dbus nie jest w default runlevel"
+fi
+
+# --- Test 10: elogind (session tracking) ---
+echo ""
+echo "Test 10: elogind (session tracking)"
+if [[ -f "$ROOTFS/usr/libexec/elogind" ]] || [[ -f "$ROOTFS/usr/sbin/elogind" ]] || [[ -f "$ROOTFS/usr/bin/elogind" ]]; then
+    pass "elogind binary istnieje"
+else
+    fail "elogind binary brak"
+fi
+
 # --- Podsumowanie ---
 echo ""
 echo -e "${YELLOW}=== Podsumowanie ===${NC}"
