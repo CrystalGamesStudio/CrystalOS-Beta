@@ -137,6 +137,24 @@ else
     fail "elogind binary brak"
 fi
 
+# --- Test 11: Auto-login na tty1 ---
+echo ""
+echo "Test 11: Auto-login na tty1"
+if [[ -f "$ROOTFS/etc/inittab" ]] && grep -q "getty -a root" "$ROOTFS/etc/inittab"; then
+    pass "inittab ma auto-login na tty1"
+else
+    fail "brak auto-loginu w inittab"
+fi
+
+# --- Test 12: Auto-start X w .profile ---
+echo ""
+echo "Test 12: Auto-start X w .profile"
+if [[ -f "$ROOTFS/root/.profile" ]] && grep -q "startx" "$ROOTFS/root/.profile"; then
+    pass ".profile uruchamia startx na tty1"
+else
+    fail "brak auto-start X w .profile"
+fi
+
 # --- Podsumowanie ---
 echo ""
 echo -e "${YELLOW}=== Podsumowanie ===${NC}"

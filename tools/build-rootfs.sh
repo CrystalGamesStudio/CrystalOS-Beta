@@ -121,8 +121,8 @@ cat > "$ROOTFS/etc/inittab" << 'INITTAB'
 ::sysinit:/sbin/openrc boot
 ::wait:/sbin/openrc default
 
-# Set up a couple of getty's
-tty1::respawn:/sbin/getty 38400 tty1
+# Auto-login na tty1, zwykly getty na tty2
+tty1::respawn:/sbin/getty -a root 38400 tty1
 tty2::respawn:/sbin/getty 38400 tty2
 ttyS0::respawn:/sbin/getty 115200 ttyS0
 
@@ -257,6 +257,15 @@ cat > "$ROOTFS/root/.xinitrc" << 'XINITRC'
 exec startxfce4
 XINITRC
 chmod +x "$ROOTFS/root/.xinitrc"
+
+# Auto-start XFCE na tty1 (po auto-loginie)
+cat > "$ROOTFS/root/.profile" << 'PROFILE'
+# Auto-start XFCE desktop na tty1
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    startx
+    logout
+fi
+PROFILE
 
 # Konfiguracja XFCE - panel na dole, 2 obszary robocze, domyslne tlo
 echo "Konfiguracja XFCE..."
