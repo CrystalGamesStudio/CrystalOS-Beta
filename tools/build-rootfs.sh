@@ -185,18 +185,18 @@ LIGHTDM_PACKAGES="lightdm lightdm-gtk-greeter"
 ALL_PACKAGES="$XORG_PACKAGES $XFCE_PACKAGES $LIGHTDM_PACKAGES"
 
 if command -v apk &>/dev/null; then
-    apk --root "$ROOTFS" --allow-untrusted --no-cache \
+    apk --root "$ROOTFS" --allow-untrusted --no-cache --no-scripts \
         --repository "$ALPINE_REPO_MAIN" \
         --repository "$ALPINE_REPO_COMMUNITY" add $ALL_PACKAGES
 elif [[ -n "$APK_STATIC" ]]; then
-    $APK_STATIC --root "$ROOTFS" --allow-untrusted --no-cache \
+    $APK_STATIC --root "$ROOTFS" --allow-untrusted --no-cache --no-scripts \
         --repository "$ALPINE_REPO_MAIN" \
         --repository "$ALPINE_REPO_COMMUNITY" add $ALL_PACKAGES
 elif [[ -x "$ROOTFS/sbin/apk" ]]; then
     mount -t proc proc "$ROOTFS/proc" 2>/dev/null || true
     mount -t sysfs sysfs "$ROOTFS/sys" 2>/dev/null || true
     mount -o bind /dev "$ROOTFS/dev" 2>/dev/null || true
-    chroot "$ROOTFS" apk add --no-cache $ALL_PACKAGES
+    chroot "$ROOTFS" apk add --no-cache --no-scripts $ALL_PACKAGES
     umount "$ROOTFS/dev" 2>/dev/null || true
     umount "$ROOTFS/sys" 2>/dev/null || true
     umount "$ROOTFS/proc" 2>/dev/null || true
