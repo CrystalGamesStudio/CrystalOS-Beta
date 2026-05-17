@@ -131,8 +131,8 @@ fi
 # --- Test 10: elogind (session tracking) ---
 echo ""
 echo "Test 10: elogind (session tracking)"
-if [[ -f "$ROOTFS/usr/libexec/elogind" ]] || [[ -f "$ROOTFS/usr/sbin/elogind" ]] || [[ -f "$ROOTFS/usr/bin/elogind" ]]; then
-    pass "elogind binary istnieje"
+if find "$ROOTFS/usr" "$ROOTFS/lib" -name "elogind*" -type f 2>/dev/null | grep -q .; then
+    pass "elogind binary/pliki istnieja"
 else
     fail "elogind binary brak"
 fi

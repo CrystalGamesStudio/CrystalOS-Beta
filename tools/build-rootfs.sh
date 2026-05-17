@@ -380,15 +380,32 @@ RCSCRIPT
     ln -sf /etc/init.d/lightdm "$ROOTFS/etc/runlevels/default/lightdm"
 fi
 
-# dbus tez potrzebny dla LightDM
+# dbus - wymagany przez LightDM
+# Tworzy init script recznie (bo --no-scripts pomija trigger skrypty pakietu)
 mkdir -p "$ROOTFS/etc/runlevels/boot" "$ROOTFS/etc/runlevels/default"
-if [[ -f "$ROOTFS/etc/init.d/dbus" ]] && [[ ! -L "$ROOTFS/etc/runlevels/default/dbus" ]]; then
-    ln -sf /etc/init.d/dbus "$ROOTFS/etc/runlevels/default/dbus"
-fi
+if [[ ! -f "$ROOTFS/etc/init.d/dbus" ]]; then
+    cat > "$ROOTFS/etc/init.d/dbus" << 'DBUSRC'
+#!/sbin/openrc-run
 
-# elogind potrzebny dla LightDM (session tracking)
-if [[ -f "$ROOTFS/etc/init.d/elogind" ]] && [[ ! -L "$ROOTFS/etc/runlevels/default/elogind" ]]; then
-    ln -sf /etc/init.d/elogind "$ROOTFS/etc/runlevels/default/elogind"
+name="dbus"
+description="D-Bus System Message Bus"
+command="/usr/bin/dbus-daemon"
+command_args="--system"
+command_background=yes
+pidfile="/run/${RC_SVCNAME}.pid"
+start_stop_daemon_args="--make-pidfile"
+
+depend() {
+    need bootmisc
+    after logger
+}
+
+start_pre() {
+    mkdir -p /run/dbus
+}
+DBUSRC
+    chmod +x "$ROOTFS/etc/init.d/dbus"
 fi
+ln -sf /etc/init.d/dbus "$ROOTFS/etc/runlevels/default/dbus"
 
 echo "=== Rootfs gotowy: $ROOTFS ==="
