@@ -344,7 +344,7 @@ screen-name=CrystalOS
 GREETERCONF
 
 # OpenRC serwis lightdm w default runlevel
-mkdir -p "$ROOTFS/etc/runlevels/default"
+mkdir -p "$ROOTFS/etc/init.d" "$ROOTFS/etc/runlevels/default"
 if [[ -f "$ROOTFS/etc/init.d/lightdm" ]]; then
     ln -sf /etc/init.d/lightdm "$ROOTFS/etc/runlevels/default/lightdm"
 else
