@@ -28,19 +28,19 @@ echo ""
 
 # --- Test 1: lightdm binary ---
 echo "Test 1: lightdm binary"
-if [[ -f "$ROOTFS/usr/sbin/lightdm" ]]; then
+if [[ -f "$ROOTFS/usr/sbin/lightdm" ]] || [[ -f "$ROOTFS/usr/bin/lightdm" ]]; then
     pass "lightdm binary istnieje"
 else
-    fail "lightdm binary brak (oczekiwano /usr/sbin/lightdm)"
+    fail "lightdm binary brak (szukano /usr/sbin/lightdm, /usr/bin/lightdm)"
 fi
 
 # --- Test 2: lightdm-greeter (gtk) ---
 echo ""
 echo "Test 2: lightdm-gtk-greeter"
-if [[ -f "$ROOTFS/usr/sbin/lightdm-gtk-greeter" ]]; then
+if [[ -f "$ROOTFS/usr/sbin/lightdm-gtk-greeter" ]] || [[ -f "$ROOTFS/usr/bin/lightdm-gtk-greeter" ]]; then
     pass "lightdm-gtk-greeter istnieje"
 else
-    fail "lightdm-gtk-greeter brak (oczekiwano /usr/sbin/lightdm-gtk-greeter)"
+    fail "lightdm-gtk-greeter brak (szukano /usr/sbin/lightdm-gtk-greeter, /usr/bin/lightdm-gtk-greeter)"
 fi
 
 # --- Test 3: lightdm.conf istnieje ---
