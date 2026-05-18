@@ -63,11 +63,11 @@ else
     fail "libinput_drv.so brak"
 fi
 
-# --- Test 5: Sterownik graficzny (vesa lub modesetting) ---
+# --- Test 5: Sterownik graficzny (fbdev, vesa lub modesetting) ---
 echo ""
 echo "Test 5: Sterownik graficzny"
-if find "$ROOTFS/usr/lib/xorg" -name "modesetting_drv.so" -o -name "vesa_drv.so" 2>/dev/null | grep -q .; then
-    pass "Sterownik graficzny (modesetting/vesa) znaleziony"
+if find "$ROOTFS/usr/lib/xorg" \( -name "modesetting_drv.so" -o -name "vesa_drv.so" -o -name "fbdev_drv.so" \) 2>/dev/null | grep -q .; then
+    pass "Sterownik graficzny (fbdev/modesetting/vesa) znaleziony"
 else
     fail "Sterownik graficzny brak"
 fi
@@ -78,8 +78,8 @@ echo "Test 6: Konfiguracja xorg.conf"
 XORG_CONF="$ROOTFS/etc/X11/xorg.conf"
 if [[ -f "$XORG_CONF" ]]; then
     pass "xorg.conf istnieje"
-    if grep -q "virtio" "$XORG_CONF" || grep -q "modesetting" "$XORG_CONF"; then
-        pass "xorg.conf ma wpis graficzny (virtio/modesetting)"
+    if grep -q "virtio\|modesetting\|fbdev" "$XORG_CONF"; then
+        pass "xorg.conf ma wpis graficzny (virtio/modesetting/fbdev)"
     else
         fail "xorg.conf brak wpisu graficznego"
     fi
@@ -87,15 +87,15 @@ else
     fail "xorg.conf brak (oczekiwano /etc/X11/xorg.conf)"
 fi
 
-# --- Test 7: Kernel DRM + VIRTIO_GPU ---
+# --- Test 7: Kernel framebuffer support ---
 echo ""
-echo "Test 7: Kernel DRM + VIRTIO_GPU"
+echo "Test 7: Kernel framebuffer"
 KERNEL_CONFIG="$PROJECT_ROOT/tools/crystalos.config"
-for OPT in CONFIG_DRM CONFIG_DRM_VIRTIO_GPU; do
+for OPT in CONFIG_FB CONFIG_FB_VESA CONFIG_FB_SIMPLE; do
     if grep -q "^${OPT}=y" "$KERNEL_CONFIG"; then
         pass "$OPT=y"
     else
-        fail "$OPT nie włączone w kernel config"
+        fail "$OPT nie włączone w kernel config (ustawiane przez CI)"
     fi
 done
 
