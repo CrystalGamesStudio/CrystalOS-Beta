@@ -137,22 +137,31 @@ else
     fail "elogind binary brak"
 fi
 
-# --- Test 11: Auto-login na tty1 ---
+# --- Test 11: startx dostepny ---
 echo ""
-echo "Test 11: Auto-login na tty1"
-if [[ -f "$ROOTFS/etc/inittab" ]] && grep -q "getty -a root" "$ROOTFS/etc/inittab"; then
-    pass "inittab ma auto-login na tty1"
+echo "Test 11: startx dostepny"
+if [[ -f "$ROOTFS/usr/bin/startx" ]]; then
+    pass "startx istnieje"
 else
-    fail "brak auto-loginu w inittab"
+    fail "startx brak"
 fi
 
-# --- Test 12: Auto-start X w .profile ---
+# --- Test 12: .xinitrc uruchamia XFCE ---
 echo ""
-echo "Test 12: Auto-start X w .profile"
-if [[ -f "$ROOTFS/root/.profile" ]] && grep -q "startx" "$ROOTFS/root/.profile"; then
-    pass ".profile uruchamia startx na tty1"
+echo "Test 12: .xinitrc uruchamia XFCE"
+if [[ -f "$ROOTFS/root/.xinitrc" ]] && grep -q "startxfce4" "$ROOTFS/root/.xinitrc"; then
+    pass ".xinitrc uruchamia startxfce4"
 else
-    fail "brak auto-start X w .profile"
+    fail ".xinitrc nie uruchamia startxfce4"
+fi
+
+# --- Test 13: Komunikat o startx w powitaniu ---
+echo ""
+echo "Test 13: Komunikat o startx w powitaniu"
+if [[ -f "$ROOTFS/etc/profile.d/crystalos-welcome.sh" ]] && grep -q "startx" "$ROOTFS/etc/profile.d/crystalos-welcome.sh"; then
+    pass "powitanie informuje o startx"
+else
+    fail "powitanie nie informuje o startx"
 fi
 
 # --- Podsumowanie ---

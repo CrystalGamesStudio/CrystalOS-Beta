@@ -103,15 +103,8 @@ EOF
 cat > "$ROOTFS/etc/profile.d/crystalos-welcome.sh" << 'WELCOME'
 echo ""
 echo "Witaj w CrystalOS Beta!"
+echo "Wpisz 'startx' aby uruchomic pulpit graficzny (XFCE)"
 echo ""
-
-# Auto-start XFCE na tty1 (backup - .profile tez to robi)
-if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    mkdir -p /run/dbus
-    dbus-daemon --system 2>/dev/null &
-    sleep 1
-    exec startx
-fi
 WELCOME
 chmod +x "$ROOTFS/etc/profile.d/crystalos-welcome.sh"
 
@@ -128,8 +121,8 @@ cat > "$ROOTFS/etc/inittab" << 'INITTAB'
 ::sysinit:/sbin/openrc boot
 ::wait:/sbin/openrc default
 
-# Auto-login na tty1, zwykly getty na tty2
-tty1::respawn:/sbin/getty -a root 38400 tty1
+# Normalne getty na tty1 i tty2
+tty1::respawn:/sbin/getty 38400 tty1
 tty2::respawn:/sbin/getty 38400 tty2
 ttyS0::respawn:/sbin/getty 115200 ttyS0
 
@@ -265,16 +258,12 @@ exec startxfce4
 XINITRC
 chmod +x "$ROOTFS/root/.xinitrc"
 
-# Auto-start XFCE na tty1 (po auto-loginie)
+# .profile - start dbus dla XFCE
 cat > "$ROOTFS/root/.profile" << 'PROFILE'
-# Auto-start XFCE desktop na tty1
-if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    # Start dbus (wymagany przez XFCE)
+# Start dbus (wymagany przez XFCE)
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
     mkdir -p /run/dbus
-    dbus-daemon --system 2>/dev/null &
-    sleep 1
-    # Start XFCE
-    exec startx
+    dbus-daemon --system 2>/dev/null
 fi
 PROFILE
 
