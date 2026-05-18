@@ -43,6 +43,8 @@ jobs:
           scripts/config --enable DRM_VIRTIO_GPU
           scripts/config --enable FB
           scripts/config --enable FRAMEBUFFER_CONSOLE
+          scripts/config --enable UNIX
+          scripts/config --enable INET
           make olddefconfig
 
       - name: Build kernel
