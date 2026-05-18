@@ -54,13 +54,24 @@ cat > "$ISO_DIR/boot/grub/grub.cfg" << 'GRUBCFG'
 set timeout=3
 set default=0
 
+insmod all_video
+insmod gfxterm
+terminal_output gfxterm
+
 menuentry "CrystalOS Beta" {
+    set gfxpayload=1024x768x24
+    linux /boot/vmlinuz console=tty0
+    initrd /boot/initramfs
+}
+
+menuentry "CrystalOS Beta (serial console)" {
     linux /boot/vmlinuz console=ttyS0,115200 console=tty0
     initrd /boot/initramfs
 }
 
 menuentry "CrystalOS Beta (debug)" {
-    linux /boot/vmlinuz console=ttyS0,115200 console=tty0 debug loglevel=7
+    set gfxpayload=1024x768x24
+    linux /boot/vmlinuz console=tty0 debug loglevel=7
     initrd /boot/initramfs
 }
 GRUBCFG

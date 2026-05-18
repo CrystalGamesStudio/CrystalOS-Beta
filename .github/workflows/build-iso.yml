@@ -41,6 +41,7 @@ jobs:
           scripts/config --enable USB_HID
           scripts/config --enable FB
           scripts/config --enable FB_VESA
+          scripts/config --enable FB_SIMPLE
           scripts/config --enable FRAMEBUFFER_CONSOLE
           scripts/config --enable UNIX
           scripts/config --enable INET
@@ -113,7 +114,7 @@ jobs:
       - name: Run ISO tests
         run: bash tests/test-iso.sh
 
-      - name: Boot test in QEMU
+      - name: Boot test in QEMU (serial)
         run: |
           echo "Test bootowania w QEMU (serial console)..."
           LOG=/tmp/qemu-boot.log
