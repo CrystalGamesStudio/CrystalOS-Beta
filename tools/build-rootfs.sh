@@ -175,7 +175,7 @@ chmod +x "$ROOTFS/init"
 echo "Instalacja Xorg..."
 XORG_PACKAGES="xorg-server xinit xrandr xterm xauth \
     xf86-input-libinput \
-    xf86-video-modesetting"
+    xf86-video-fbdev"
 
 XFCE_PACKAGES="xfce4 xfwm4 xfce4-panel xfdesktop \
     xfce4-session xfce4-settings xfce4-appfinder"
@@ -217,24 +217,13 @@ else
 fi
 cp "$ROOTFS/etc/machine-id" "$ROOTFS/var/lib/dbus/machine-id" 2>/dev/null || true
 
-# Tworzy xorg.conf dla virtio-gpu + modesetting
+# Tworzy xorg.conf dla fbdev (VESA framebuffer)
 echo "Konfiguracja xorg.conf..."
 mkdir -p "$ROOTFS/etc/X11"
 cat > "$ROOTFS/etc/X11/xorg.conf" << 'XORGCONF'
 Section "Device"
-    Identifier "Virtio-GPU"
-    Driver "modesetting"
-    BusID "auto"
-EndSection
-
-Section "Screen"
-    Identifier "Default Screen"
-    Device "Virtio-GPU"
-    DefaultDepth 24
-    SubSection "Display"
-        Depth 24
-        Modes "1920x1080" "1024x768"
-    EndSubSection
+    Identifier "Default"
+    Driver "fbdev"
 EndSection
 
 Section "InputClass"

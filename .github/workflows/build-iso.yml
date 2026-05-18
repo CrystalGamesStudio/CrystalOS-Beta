@@ -39,9 +39,8 @@ jobs:
           scripts/config --enable HID
           scripts/config --enable HID_GENERIC
           scripts/config --enable USB_HID
-          scripts/config --enable DRM
-          scripts/config --enable DRM_VIRTIO_GPU
           scripts/config --enable FB
+          scripts/config --enable FB_VESA
           scripts/config --enable FRAMEBUFFER_CONSOLE
           scripts/config --enable UNIX
           scripts/config --enable INET
